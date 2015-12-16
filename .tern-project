@@ -2,7 +2,7 @@
   "ecmaVersion": 6,
   "libs": [],
   "loadEagerly": [
-    "app/*.js"
+    "js/**/*.js"
   ],
   "dontLoad": [
     "node_modules/**/*.js"

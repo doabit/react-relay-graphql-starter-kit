@@ -1,9 +1,9 @@
-# React demo with Graphql and Relay
+# React starter kit with Graphql, Relay and Sequelize
 
 ```
-git clone https://github.com/doabit/relay-graphql-react-demo.git
+git clone https://github.com/doabit/react-relay-graphql-starter-kit.git
 npm install
 npm start
 ```
 
-open `http://localhost:3000/graphql`
+open `http://localhost:3000`

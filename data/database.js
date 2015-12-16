@@ -1,10 +1,11 @@
 import Sequelize from 'sequelize';
 import _ from 'lodash';
 import Faker from 'faker';
+import path from 'path';
 
 const Conn = new Sequelize('development', null, null, {
     dialect: 'sqlite',
-    storage: './development.sqlite'
+    storage:  path.join(__dirname, './development.sqlite')
 });
 
 const Person = Conn.define('person', {
