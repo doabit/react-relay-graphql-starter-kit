@@ -40,18 +40,21 @@ const Post = Conn.define('post', {
 Person.hasMany(Post);
 Post.belongsTo(Person);
 
-Conn.sync({force: true}).then(() => {
-  _.times(10, (i) => {
-    return Person.create({
-      firstName: Faker.name.firstName(),
-      lastName: Faker.name.lastName(),
-      email: Faker.internet.email()
-    }).then(person => {
-      return person.createPost({
-        title: `Sample title by ${person.firstName}`,
-        content: 'this is content'
-      });
-    });
-  });
-});
-export default Conn;
+// Conn.sync({force: true}).then(() => {
+//   _.times(10, (i) => {
+//     return Person.create({
+//       firstName: Faker.name.firstName(),
+//       lastName: Faker.name.lastName(),
+//       email: Faker.internet.email()
+//     }).then(person => {
+//       return person.createPost({
+//         title: `Sample title by ${person.firstName}`,
+//         content: 'this is content'
+//       });
+//     });
+//   });
+// });
+// export default Conn;
+module.exports = {
+   Person, Post
+};

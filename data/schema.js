@@ -6,13 +6,16 @@ import {
   GraphQLSchema
 } from 'graphql';
 
-import Db from './database';
+import {
+  Post,
+  Person
+} from './database';
 
 import {
   fromGlobalId,
   globalIdField,
   nodeDefinitions,
-  connectionFromArray
+  // connectionFromArray
 } from 'graphql-relay';
 
 
@@ -20,17 +23,17 @@ var {nodeInterface, nodeField} = nodeDefinitions(
   (globalId) => {
     var {type, id} = fromGlobalId(globalId);
     if (type === 'Person') {
-      return Db.models.person.findById(id);
+      return Person.findById(id);
     } else if (type === 'Post') {
-      return Db.models.post.findById(id);
+      return Post.findById(id);
     } else {
       return null;
     }
   },
   (obj) => {
-    if (obj instanceof Person) {
+    if (obj instanceof Person.Instance) {
       return PersonType;
-    } else if (obj instanceof Post)  {
+    } else if (obj instanceof Post.Instance)  {
       return PostType;
     } else {
       return null;
@@ -41,6 +44,7 @@ var {nodeInterface, nodeField} = nodeDefinitions(
 const PersonType  = new GraphQLObjectType({
   name: 'Person',
   description: 'This response a Person',
+  interfaces: [nodeInterface],
   fields: () => {
     return {
       id: globalIdField('Person'),
@@ -91,6 +95,12 @@ const PostType  = new GraphQLObjectType({
         resolve(post) {
           return post.content
         }
+      },
+      person: {
+        type: PersonType,
+        resolve(post) {
+          return post.getPerson()
+        }
       }
     };
   }
@@ -109,12 +119,12 @@ const StoreType = new GraphQLObjectType({
             type: GraphQLString
           }
       },
-      resolve: (root, args) => Db.models.person.findAll({where: args})
+      resolve: (root, args) => Person.findAll({where: args})
     },
     posts: {
       type: new GraphQLList(PostType),
       resolve: (root, args) => {
-        return Db.models.post.findAll();
+        return Post.findAll();
       },
     },
   }),
@@ -125,6 +135,7 @@ const store = {};
 const Query = new GraphQLObjectType({
     name: 'Query',
     fields: {
+      node: nodeField,
       store: {
         type: StoreType,
         resolve: () => store,
@@ -148,13 +159,13 @@ const Query = new GraphQLObjectType({
 //           }
 //         },
 //         resolve(root, args) {
-//           return Db.models.person.findAll({where: args});
+//           return Person.findAll({where: args});
 //         }
 //       },
 //       posts: {
 //         type: new GraphQLList(Post),
 //         resolve(root, args) {
-//           return Db.models.post.findAll({where: args});
+//           return Post.findAll({where: args});
 //         }
 //       }
 //     };

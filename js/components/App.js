@@ -1,33 +1,19 @@
 import React from 'react';
-import Relay from 'react-relay';
+import {Link} from 'react-router';
 
 class App extends React.Component {
   render() {
     return (
       <div>
-        <h1>Post list</h1>
         <ul>
-          {this.props.store.people.map(person =>
-             <li key={person.id}>{person.firstName} (ID: {person.id})</li>
-          )}
+          <li><Link to="/people">People</Link></li>
+          <li><Link to="/posts">Posts</Link></li>
+          <li><Link to="/about">About</Link></li>
         </ul>
+        {this.props.children}
       </div>
-    );
+    )
   }
 }
 
-export default Relay.createContainer(App, {
-  fragments: {
-    store: () => Relay.QL`
-      fragment on Store {
-        people{
-          id
-          firstName
-          lastName
-          email
-        }
-      }
-    `,
-  },
-});
-
+export default App;
