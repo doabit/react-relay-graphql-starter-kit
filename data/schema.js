@@ -15,19 +15,31 @@ import {
   fromGlobalId,
   globalIdField,
   nodeDefinitions,
-  // connectionFromArray
+  connectionArgs,
+  connectionDefinitions,
+  // connectionFromArray,
+  connectionFromPromisedArray
 } from 'graphql-relay';
 
+
+import {
+  getArrayData,
+  getModelsByClass,
+  resolveArrayByClass,
+  resolveArrayData,
+  resolveModelsByClass
+} from './methods';
 
 var {nodeInterface, nodeField} = nodeDefinitions(
   (globalId) => {
     var {type, id} = fromGlobalId(globalId);
-    if (type === 'Person') {
-      return Person.findById(id);
-    } else if (type === 'Post') {
-      return Post.findById(id);
-    } else {
-      return null;
+    switch (type) {
+      case 'Person':
+        return Person.findById(id);
+      case 'Post':
+        return Post.findById(id);
+      default:
+        return null;
     }
   },
   (obj) => {
@@ -106,31 +118,45 @@ const PostType  = new GraphQLObjectType({
   }
 });
 
+const {
+  connectionType: postConnection,
+  edgeType: postEdge
+} = connectionDefinitions({name: 'Post', nodeType: PostType});
+
+const {
+  connectionType: personConnection,
+  edgeType: personEdge
+} = connectionDefinitions({name: 'Person', nodeType: PersonType});
+
 const StoreType = new GraphQLObjectType({
   name: 'Store',
   fields: () => ({
     people: {
-      type: new GraphQLList(PersonType),
-      args: {
-          id: {
-            type: GraphQLInt
-          },
-          email: {
-            type: GraphQLString
-          }
-      },
-      resolve: (root, args) => Person.findAll({where: args})
+      type: personConnection,
+      args: connectionArgs,
+      resolve: (root, args) => {
+        return connectionFromPromisedArray(
+          resolveArrayData(Person.findAll()), args
+        )
+      }
     },
     posts: {
-      type: new GraphQLList(PostType),
+      type: postConnection,
+      args: connectionArgs,
       resolve: (root, args) => {
-        return Post.findAll();
-      },
-    },
+        return connectionFromPromisedArray(
+          resolveArrayData(Post.findAll()), args
+        )
+      }
+    }
   }),
 });
 
-const store = {};
+export class Store extends Object {}
+// Mock data
+var store = new Store();
+
+store.id = '1';
 
 const Query = new GraphQLObjectType({
     name: 'Query',
@@ -143,55 +169,6 @@ const Query = new GraphQLObjectType({
     },
 });
 
-// const Query = new GraphQLObjectType({
-//   name: 'Query',
-//   description: 'This is root query',
-//   fields: () => {
-//     return {
-//       people: {
-//         type: new GraphQLList(Person),
-//         args: {
-//           id: {
-//             type: GraphQLInt
-//           },
-//           email: {
-//             type: GraphQLString
-//           }
-//         },
-//         resolve(root, args) {
-//           return Person.findAll({where: args});
-//         }
-//       },
-//       posts: {
-//         type: new GraphQLList(Post),
-//         resolve(root, args) {
-//           return Post.findAll({where: args});
-//         }
-//       }
-//     };
-//   }
-// });
-
-// // In memory data store
-// const TodoStore = [
-//   "Learn some GraphQL",
-//   "Build a sample app"
-// ];
-//
-// // Root level queries
-// const Query = new GraphQLObjectType({
-//   name: "Query",
-//   fields: () => ({
-//     items: {
-//       type: new GraphQLList(GraphQLString),
-//       description: "List of todo items",
-//       resolve() {
-//         // close and send
-//         return TodoStore.concat([]);
-//       }
-//     }
-//   })
-// });
 
 const Schema = new GraphQLSchema({
   query: Query
