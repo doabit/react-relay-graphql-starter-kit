@@ -3,7 +3,8 @@ import {
   GraphQLInt,
   GraphQLString,
   GraphQLList,
-  GraphQLSchema
+  GraphQLSchema,
+  GraphQLNonNull
 } from 'graphql';
 
 import {
@@ -17,8 +18,11 @@ import {
   nodeDefinitions,
   connectionArgs,
   connectionDefinitions,
+  offsetToCursor,
+  cursorForObjectInConnection,
   // connectionFromArray,
-  connectionFromPromisedArray
+  connectionFromPromisedArray,
+  mutationWithClientMutationId
 } from 'graphql-relay';
 
 
@@ -30,6 +34,8 @@ import {
   resolveModelsByClass
 } from './methods';
 
+const _ = require('lodash');
+
 var {nodeInterface, nodeField} = nodeDefinitions(
   (globalId) => {
     var {type, id} = fromGlobalId(globalId);
@@ -38,6 +44,8 @@ var {nodeInterface, nodeField} = nodeDefinitions(
         return Person.findById(id);
       case 'Post':
         return Post.findById(id);
+      case 'Store':
+        return store;
       default:
         return null;
     }
@@ -47,6 +55,8 @@ var {nodeInterface, nodeField} = nodeDefinitions(
       return PersonType;
     } else if (obj instanceof Post.Instance)  {
       return PostType;
+    } else if (obj instanceof Store)  {
+      return StoreType;
     } else {
       return null;
     }
@@ -79,11 +89,21 @@ const PersonType  = new GraphQLObjectType({
         }
       },
       posts: {
-        type: new GraphQLList(PostType),
-        resolve(person) {
-          return person.getPosts()
+        type: postConnection,
+        args: connectionArgs,
+        resolve: (person, args) => {
+          return connectionFromPromisedArray(
+            resolveArrayData(Post.findAll({personId: person.id})), args
+          )
         }
       }
+      // posts: {
+      //   type: new GraphQLList(PostType),
+      //   resolve(person) {
+      //     console.log(person)
+      //     return person.getPosts()
+      //   }
+      // }
     };
   }
 });
@@ -111,7 +131,7 @@ const PostType  = new GraphQLObjectType({
       person: {
         type: PersonType,
         resolve(post) {
-          return post.getPerson()
+          return Person.findById(post.personId)
         }
       }
     };
@@ -130,7 +150,9 @@ const {
 
 const StoreType = new GraphQLObjectType({
   name: 'Store',
+  interfaces: [nodeInterface],
   fields: () => ({
+    id: globalIdField("Store"),
     people: {
       type: personConnection,
       args: connectionArgs,
@@ -143,7 +165,7 @@ const StoreType = new GraphQLObjectType({
     posts: {
       type: postConnection,
       args: connectionArgs,
-      resolve: (root, args) => {
+      resolve: (_, args) => {
         return connectionFromPromisedArray(
           resolveArrayData(Post.findAll()), args
         )
@@ -152,11 +174,9 @@ const StoreType = new GraphQLObjectType({
   }),
 });
 
-export class Store extends Object {}
+class Store {}
 // Mock data
-var store = new Store();
-
-store.id = '1';
+let store = new Store();
 
 const Query = new GraphQLObjectType({
     name: 'Query',
@@ -170,8 +190,96 @@ const Query = new GraphQLObjectType({
 });
 
 
+const createPostMutation = mutationWithClientMutationId({
+  name: 'CreatePost',
+
+  inputFields: {
+    title: { type: new GraphQLNonNull(GraphQLString) },
+    content: { type: new GraphQLNonNull(GraphQLString) },
+    person: { type: new GraphQLNonNull(GraphQLString) },
+  },
+
+  // outputFields: {
+  //   postEdge: {
+  //     type: postEdge,
+  //     resolve: ({obj}) => {
+  //       console.log("obj")
+  //
+  //        // return { node: obj.ops[0], cursor: obj.insertedId }
+  //     }
+  //   },
+  //   store: {
+  //     type: StoreType,
+  //     resolve: () => store
+  //   }
+  // },
+
+  outputFields: {
+    postEdge: {
+      type: postEdge,
+      resolve: ({newPost, cursor}) => {
+        return {
+          cursor,
+          node: newPost
+        }
+        // return Post.findAll()
+        // .then(posts => {
+        //   return {
+        //     cursor,
+        //     node: newPost
+        //   }
+        // })
+      }
+    },
+    store: {
+      type: StoreType,
+      resolve: () => store
+    }
+  },
+
+  mutateAndGetPayload: ({title, content, person}) => {
+    const {type, id} = fromGlobalId(person);
+    return Post.create({title: title, content: content, personId: id})
+    .then(newPost => {
+      return Post.findAll().then(posts => {
+        return {
+          newPost,
+          cursor: offsetToCursor(
+            _.findIndex(posts, post => post.id === newPost.id)
+          )
+        }
+      })
+    })
+ }
+
+  // mutateAndGetPayload: ({title, content}) => {
+    // console.log(title);
+    // Post.create({
+    //   personId: 1,
+    //   title: title,
+    //   content: content
+    // }).then( post =>{
+    //   console.log(post.id);
+    //   return {post};
+    // });
+    // let localPostId = post.id
+    // return {localPostId}
+    // return db.collection("links").insertOne({
+    //   title,
+    //   content,
+    //   createdAt: Date.now()
+    // });
+  // }
+});
+
 const Schema = new GraphQLSchema({
-  query: Query
+  query: Query,
+  mutation: new GraphQLObjectType({
+    name: 'Mutation',
+    fields: () => ({
+      createPost: createPostMutation
+    })
+  })
 });
 
 export default Schema;

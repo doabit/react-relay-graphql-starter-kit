@@ -9,6 +9,12 @@ const Conn = new Sequelize('development', null, null, {
 });
 
 const Person = Conn.define('person', {
+  // type: {
+  //   type: new Sequelize.VIRTUAL(Sequelize.STRING),
+  //   get() {
+  //     return 'Person';
+  //   }
+  // },
   firstName: {
     type: Sequelize.STRING,
     allowNull: false
@@ -27,6 +33,12 @@ const Person = Conn.define('person', {
 });
 
 const Post = Conn.define('post', {
+  // type: {
+  //   type: new Sequelize.VIRTUAL(Sequelize.STRING),
+  //   get() {
+  //     return 'Post';
+  //   }
+  // },
   title: {
     type: Sequelize.STRING,
     allowNull: false

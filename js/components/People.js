@@ -13,7 +13,7 @@ class People extends React.Component {
 
     return (
       <div>
-        <h1>Post list</h1>
+        <h1>People list</h1>
         <ul>
           {this.props.store.people.edges.map(edge =>
              <li key={edge.node.id}>
