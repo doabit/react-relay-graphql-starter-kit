@@ -93,7 +93,7 @@ const PersonType  = new GraphQLObjectType({
         args: connectionArgs,
         resolve: (person, args) => {
           return connectionFromPromisedArray(
-            resolveArrayData(Post.findAll({personId: person.id})), args
+            resolveArrayData(person.getPosts(), true), args
           )
         }
       }
@@ -131,7 +131,8 @@ const PostType  = new GraphQLObjectType({
       person: {
         type: PersonType,
         resolve(post) {
-          return Person.findById(post.personId)
+          // return Person.findById(post.personId)
+          return post.getPerson();
         }
       }
     };
@@ -158,7 +159,7 @@ const StoreType = new GraphQLObjectType({
       args: connectionArgs,
       resolve: (root, args) => {
         return connectionFromPromisedArray(
-          resolveArrayData(Person.findAll()), args
+          resolveArrayData(Person.findAll(), true), args
         )
       }
     },
@@ -167,7 +168,7 @@ const StoreType = new GraphQLObjectType({
       args: connectionArgs,
       resolve: (_, args) => {
         return connectionFromPromisedArray(
-          resolveArrayData(Post.findAll()), args
+          resolveArrayData(Post.findAll(), true), args
         )
       }
     }
