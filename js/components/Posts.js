@@ -28,7 +28,7 @@ class Posts extends React.Component {
     );
     this.refs.newTitle.value = "";
     this.refs.newContent.value = "";
-  }
+  };
 
   render() {
     var currentNumber = this.props.relay.variables.limit;
