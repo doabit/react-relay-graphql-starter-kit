@@ -1,9 +1,9 @@
 import React from 'react';
 import Relay from 'react-relay';
-import Post from './posts/Post';
-import CreatePostMutation from "../mutations/CreatePostMutation";
+import Post from './Post';
+import CreatePostMutation from "../../mutations/CreatePostMutation";
 
-class Posts extends React.Component {
+class PostList extends React.Component {
   // constructor(props) {
   //   super(props);
   // }
@@ -31,7 +31,7 @@ class Posts extends React.Component {
   };
 
   render() {
-    var currentNumber = this.props.relay.variables.limit;
+    let currentNumber = this.props.relay.variables.first;
     var buttonStyle = {};
     if (!this.props.store.posts.pageInfo.hasNextPage) {
       buttonStyle.display = 'none';
@@ -39,7 +39,7 @@ class Posts extends React.Component {
 
     return (
       <div>
-        <h1>Post list</h1>
+        <h1>Post List</h1>
         <ul>
           {this.props.store.posts.edges.map(edge =>
              <Post key={edge.node.id} post={edge.node}></Post>
@@ -47,7 +47,10 @@ class Posts extends React.Component {
         </ul>
         <button
           style={buttonStyle}
-          onClick={() => this.props.relay.setVariables({limit: currentNumber + 10})}>
+          onClick={() => {
+            console.log(currentNumber);
+            this.props.relay.setVariables({first: currentNumber + 5});
+          }}>
             load more
         </button>
 
@@ -86,9 +89,9 @@ class Posts extends React.Component {
   }
 }
 
-export default Relay.createContainer(Posts, {
+export default Relay.createContainer(PostList, {
   initialVariables: {
-    limit: 10
+    first: 5
   },
   fragments: {
     store: () => Relay.QL`
@@ -105,7 +108,7 @@ export default Relay.createContainer(Posts, {
           }
         }
 
-        posts(first: $limit){
+        posts(first: $first){
           edges{
             node{
               id

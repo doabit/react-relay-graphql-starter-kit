@@ -9,10 +9,10 @@ import {RelayRouter} from 'react-router-relay';
 
 import App from './components/App';
 import About from './components/About';
-import People from './components/People';
-import Person from './components/Person';
-import Posts from './components/Posts';
-import Post from './components/Post';
+import PersonList from './components/people/PersonList';
+import PersonShow from './components/people/PersonShow';
+import PostList from './components/posts/PostList';
+import PostShow from './components/posts/PostShow';
 
 import NoMatch from './components/NoMatch';
 
@@ -31,27 +31,27 @@ ReactDOM.render(
     <Route
       path="/" component={App}>
       <IndexRoute
-        component={People}
+        component={PersonList}
         queries={StoreQueries}
       />
       <Route
         path="/people"
-        component={People}
+        component={PersonList}
         queries={StoreQueries}
       />
       <Route
         path="/people/:id"
-        component={Person}
+        component={PersonShow}
         queries={PersonQueries}
       />
       <Route
         path="/posts"
-        component={Posts}
+        component={PostList}
         queries={StoreQueries}
       />
       <Route
         path="/posts/:id"
-        component={Post}
+        component={PostShow}
         queries={PostQueries}
       />
       <Route path="/about" component={About}/>

@@ -1,7 +1,7 @@
 import React from 'react';
 import Relay from 'react-relay';
 
-class Post extends React.Component {
+class PostShow extends React.Component {
   render() {
     const {post} = this.props;
     return (
@@ -14,7 +14,7 @@ class Post extends React.Component {
   }
 }
 
-export default Relay.createContainer(Post, {
+export default Relay.createContainer(PostShow, {
   fragments: {
     post: () => Relay.QL`
       fragment on Post {

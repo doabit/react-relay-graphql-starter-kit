@@ -1,0 +1,10 @@
+   {
+      "apps" : [{
+        "name"        : "react-relay",
+        "script"      : "./server/dev.js",
+        "watch"       : "./server",
+        "log_date_format"  : "YYYY-MM-DD HH:mm Z",
+        "exec_interpreter": "babel-node",
+        "exec_mode": "fork"
+      }]
+    }

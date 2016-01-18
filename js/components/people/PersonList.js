@@ -3,7 +3,7 @@ import React from 'react';
 import Relay from 'react-relay';
 
 
-class People extends React.Component {
+class PersonList extends React.Component {
   render() {
     var currentNumber = this.props.relay.variables.limit;
     var buttonStyle = {};
@@ -31,7 +31,7 @@ class People extends React.Component {
   }
 }
 
-export default Relay.createContainer(People, {
+export default Relay.createContainer(PersonList, {
   initialVariables: {
     limit: 5
   },
